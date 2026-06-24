@@ -6,8 +6,9 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  const isAnonymous = config.url?.endsWith('/auth/login');
 
-  if (token) {
+  if (token && !isAnonymous) {
     config.headers.Authorization = `Bearer ${token}`;
   } else {
     // For anonymous APIs like login, set tenant to root
