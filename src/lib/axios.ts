@@ -20,4 +20,20 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Check if it's a login request so we don't suppress credential errors
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest) {
+        localStorage.removeItem('token');
+        window.location.replace('/login');
+        return new Promise(() => {});
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
