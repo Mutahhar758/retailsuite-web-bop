@@ -30,6 +30,8 @@ export function TenantEdit() {
         dbProvider: values.dbProvider,
         validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
         validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
+        hasSupplyFeature: values.hasSupplyFeature,
+        hasSecondaryQty: values.hasSecondaryQty,
       }
       const response = await api.put(`/tenants/${id}`, payload)
       return response.data

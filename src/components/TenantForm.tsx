@@ -22,6 +22,8 @@ const tenantFormSchema = z.object({
   dbProvider: z.string().min(1, "DB Provider is required"),
   validFrom: z.string().optional(),
   validUntil: z.string().optional(),
+  hasSupplyFeature: z.boolean().optional(),
+  hasSecondaryQty: z.boolean().optional(),
 }).refine((data) => {
   if (data.validFrom && data.validUntil) {
     return new Date(data.validUntil) > new Date(data.validFrom);
@@ -54,6 +56,8 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
       dbProvider: initialValues?.dbProvider || "postgresql",
       validFrom: initialValues?.validFrom ? new Date(initialValues.validFrom).toISOString().split('T')[0] : "",
       validUntil: initialValues?.validUntil ? new Date(initialValues.validUntil).toISOString().split('T')[0] : "",
+      hasSupplyFeature: initialValues?.hasSupplyFeature ?? true,
+      hasSecondaryQty: initialValues?.hasSecondaryQty ?? false,
     },
   })
 
@@ -161,6 +165,52 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
                   </select>
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="hasSupplyFeature"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Enable Supply Feature</FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Enables supply orders, sale supply, and route features.
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="hasSecondaryQty"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Enable Secondary Qty</FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Enables single/pack quantities and rates.
+                  </p>
+                </div>
               </FormItem>
             )}
           />
