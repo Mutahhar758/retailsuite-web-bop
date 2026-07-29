@@ -24,6 +24,8 @@ const tenantFormSchema = z.object({
   validUntil: z.string().optional(),
   hasSupplyFeature: z.boolean().optional(),
   hasSecondaryQty: z.boolean().optional(),
+  hasKotFeature: z.boolean().optional(),
+  hasVariablePackFeature: z.boolean().optional(),
 }).refine((data) => {
   if (data.validFrom && data.validUntil) {
     return new Date(data.validUntil) > new Date(data.validFrom);
@@ -58,6 +60,8 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
       validUntil: initialValues?.validUntil ? new Date(initialValues.validUntil).toISOString().split('T')[0] : "",
       hasSupplyFeature: initialValues?.hasSupplyFeature ?? true,
       hasSecondaryQty: initialValues?.hasSecondaryQty ?? false,
+      hasKotFeature: initialValues?.hasKotFeature ?? false,
+      hasVariablePackFeature: initialValues?.hasVariablePackFeature ?? false,
     },
   })
 
@@ -209,6 +213,52 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
                   <FormLabel>Enable Secondary Qty</FormLabel>
                   <p className="text-xs text-muted-foreground">
                     Enables single/pack quantities and rates.
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="hasKotFeature"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Enable KOT Feature</FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Enables Kitchen Order Tickets and dining table management.
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="hasVariablePackFeature"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Enable Variable Pack / Wanda Feature</FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Enables rate per Kg, auto bag-rate sync, and variable weight bags.
                   </p>
                 </div>
               </FormItem>

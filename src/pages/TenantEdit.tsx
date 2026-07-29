@@ -32,6 +32,8 @@ export function TenantEdit() {
         validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
         hasSupplyFeature: values.hasSupplyFeature,
         hasSecondaryQty: values.hasSecondaryQty,
+        hasKotFeature: values.hasKotFeature,
+        hasVariablePackFeature: values.hasVariablePackFeature,
       }
       const response = await api.put(`/tenants/${id}`, payload)
       return response.data
