@@ -27,13 +27,11 @@ export function TenantEdit() {
         id: values.id,
         name: values.name,
         adminEmail: values.adminEmail || undefined,
-        dbProvider: values.dbProvider,
+        dbProvider: tenant?.dbProvider || values.dbProvider,
         validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
         validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
-        hasSupplyFeature: values.hasSupplyFeature,
-        hasSecondaryQty: values.hasSecondaryQty,
-        hasKotFeature: values.hasKotFeature,
-        hasVariablePackFeature: values.hasVariablePackFeature,
+        hasVariablePackFeature: values.shopType === "wanda",
+        hasMobileShopFeature: values.shopType === "mobile",
       }
       const response = await api.put(`/tenants/${id}`, payload)
       return response.data

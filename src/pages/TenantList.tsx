@@ -1,6 +1,7 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
-import { Plus, Pencil } from "lucide-react"
+import { Plus, Pencil, Copy, Check } from "lucide-react"
 import { format } from "date-fns"
 
 import api from "@/lib/axios"
@@ -21,12 +22,16 @@ interface Tenant {
   name: string
   adminEmail: string | null
   isActive: boolean
+  licenseKey?: string | null
+  hasVariablePackFeature?: boolean
+  hasMobileShopFeature?: boolean
   validFrom: string
   validUntil: string | null
 }
 
 export function TenantList() {
   const navigate = useNavigate()
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["tenants"],
@@ -56,6 +61,8 @@ export function TenantList() {
             <TableRow>
               <TableHead>Identifier</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>License Key</TableHead>
               <TableHead>Admin Email</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Valid From</TableHead>
@@ -68,6 +75,49 @@ export function TenantList() {
               <TableRow key={tenant.id}>
                 <TableCell className="font-medium">{tenant.identifier}</TableCell>
                 <TableCell>{tenant.name}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    tenant.hasMobileShopFeature
+                      ? 'bg-purple-100 text-purple-700'
+                      : tenant.hasVariablePackFeature
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}>
+                    {tenant.hasMobileShopFeature
+                      ? 'Mobile'
+                      : tenant.hasVariablePackFeature
+                      ? 'Wanda'
+                      : 'Normal'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  {tenant.licenseKey ? (
+                    <div className="flex items-center gap-1">
+                      <code className="text-[11px] font-mono bg-muted px-1.5 py-0.5 rounded max-w-[120px] truncate" title={tenant.licenseKey}>
+                        {tenant.licenseKey}
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                        title="Copy License Key"
+                        onClick={() => {
+                          navigator.clipboard.writeText(tenant.licenseKey || "");
+                          setCopiedId(tenant.id);
+                          setTimeout(() => setCopiedId(null), 2000);
+                        }}
+                      >
+                        {copiedId === tenant.id ? (
+                          <Check className="w-3.5 h-3.5 text-green-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>{tenant.adminEmail || '-'}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -93,7 +143,7 @@ export function TenantList() {
             ))}
             {tenants.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                   No tenants found.
                 </TableCell>
               </TableRow>

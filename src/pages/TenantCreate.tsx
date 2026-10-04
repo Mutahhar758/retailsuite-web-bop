@@ -13,13 +13,14 @@ export function TenantCreate() {
 
   const createMutation = useMutation({
     mutationFn: async (values: TenantFormValues) => {
-      // Clean up empty strings to undefined/null for optional fields
       const payload = {
         ...values,
         adminEmail: values.adminEmail || undefined,
         dbProvider: values.dbProvider,
         validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
         validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
+        hasVariablePackFeature: values.shopType === "wanda",
+        hasMobileShopFeature: values.shopType === "mobile",
       }
       const response = await api.post('/tenants', payload)
       return response.data
