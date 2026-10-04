@@ -213,13 +213,13 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
                   >
                     <option value="normal">Normal (General Retail)</option>
                     <option value="wanda">Wanda (Grain / Feed & Variable Pack)</option>
-                    <option value="mobile">Mobile (Smartphones, IMEI, Repairs & Warranty)</option>
+                    <option value="mobile">Devices & Repairs (Smartphones, Electronics, IMEI & Repairs)</option>
                   </select>
                 </FormControl>
                 <p className="text-xs text-muted-foreground mt-1">
                   {field.value === "normal" && "Standard retail business workflow with general inventory, sales, and accounts."}
                   {field.value === "wanda" && "Grain & feed merchant workflow with rate per Kg, auto bag-rate synchronization, and variable weight packs."}
-                  {field.value === "mobile" && "Mobile phone business workflow with IMEI/IMEI-2 tracking, PTA status, brands catalog, warranty lookup, and repair jobs."}
+                  {field.value === "mobile" && "Electronics & mobile device workflow with IMEI/Serial tracking, PTA status, brands catalog, warranty lookup, and repair job cards."}
                 </p>
                 <FormMessage />
               </FormItem>

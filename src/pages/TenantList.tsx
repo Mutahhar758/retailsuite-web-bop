@@ -84,7 +84,7 @@ export function TenantList() {
                       : 'bg-slate-100 text-slate-700'
                   }`}>
                     {tenant.hasMobileShopFeature
-                      ? 'Mobile'
+                      ? 'Devices & Repairs'
                       : tenant.hasVariablePackFeature
                       ? 'Wanda'
                       : 'Normal'}
