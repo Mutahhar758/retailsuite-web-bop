@@ -22,7 +22,9 @@ const tenantFormSchema = z.object({
   name: z.string().max(256).min(1, "Name is required"),
   adminEmail: z.string().email().optional().or(z.literal('')),
   dbProvider: z.string().min(1, "DB Provider is required"),
-  shopType: z.enum(["normal", "wanda", "mobile"]),
+  industryType: z.enum(["general", "wanda", "mobile", "normal"]),
+  businessSubType: z.string().optional(),
+  shopType: z.enum(["normal", "wanda", "mobile"]).optional(),
   validFrom: z.string().optional(),
   validUntil: z.string().optional(),
   hasVariablePackFeature: z.boolean().optional(),
@@ -41,6 +43,8 @@ export type TenantFormValues = z.infer<typeof tenantFormSchema>
 
 interface TenantFormProps {
   initialValues?: Partial<TenantFormValues> & {
+    industryType?: string
+    businessSubType?: string
     hasVariablePackFeature?: boolean
     hasMobileShopFeature?: boolean
     licenseKey?: string | null
@@ -54,14 +58,17 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
 
-  const defaultShopType: "normal" | "wanda" | "mobile" =
-    initialValues?.shopType
-      ? initialValues.shopType
-      : initialValues?.hasMobileShopFeature
-      ? "mobile"
-      : initialValues?.hasVariablePackFeature
+  const rawIndustry = initialValues?.industryType || (
+    initialValues?.shopType === "wanda" || initialValues?.hasVariablePackFeature
       ? "wanda"
-      : "normal";
+      : initialValues?.shopType === "mobile" || initialValues?.hasMobileShopFeature
+      ? "mobile"
+      : "general"
+  );
+  const defaultIndustry: "general" | "wanda" | "mobile" =
+    rawIndustry === "wanda" ? "wanda" : rawIndustry === "mobile" ? "mobile" : "general";
+
+  const defaultSubCategory = initialValues?.businessSubType || "general_store";
 
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchema),
@@ -71,19 +78,30 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
       name: initialValues?.name || "",
       adminEmail: initialValues?.adminEmail || "",
       dbProvider: initialValues?.dbProvider || "postgresql",
-      shopType: defaultShopType,
+      industryType: defaultIndustry,
+      businessSubType: defaultSubCategory,
+      shopType: defaultIndustry === "wanda" ? "wanda" : defaultIndustry === "mobile" ? "mobile" : "normal",
       validFrom: initialValues?.validFrom ? new Date(initialValues.validFrom).toISOString().split('T')[0] : "",
       validUntil: initialValues?.validUntil ? new Date(initialValues.validUntil).toISOString().split('T')[0] : "",
-      hasVariablePackFeature: initialValues?.hasVariablePackFeature ?? (defaultShopType === "wanda"),
-      hasMobileShopFeature: initialValues?.hasMobileShopFeature ?? (defaultShopType === "mobile"),
+      hasVariablePackFeature: initialValues?.hasVariablePackFeature ?? (defaultIndustry === "wanda"),
+      hasMobileShopFeature: initialValues?.hasMobileShopFeature ?? (defaultIndustry === "mobile"),
     },
   })
 
+  const selectedIndustry = form.watch("industryType")
+
   const handleFormSubmit = (data: TenantFormValues) => {
-    const isWanda = data.shopType === "wanda";
-    const isMobile = data.shopType === "mobile";
+    const isWanda = data.industryType === "wanda";
+    const isMobile = data.industryType === "mobile";
+    const subCategory = (data.industryType === "general" || data.industryType === "normal")
+      ? (data.businessSubType || "general_store")
+      : undefined;
+
     onSubmit({
       ...data,
+      industryType: data.industryType === "normal" ? "general" : data.industryType,
+      businessSubType: subCategory,
+      shopType: isWanda ? "wanda" : isMobile ? "mobile" : "normal",
       hasVariablePackFeature: isWanda,
       hasMobileShopFeature: isMobile,
     });
@@ -196,35 +214,99 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
 
           <FormField
             control={form.control}
-            name="shopType"
+            name="industryType"
             render={({ field }) => (
               <FormItem className="md:col-span-2">
-                <FormLabel>Shop / Organization Type</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Industry / Business Type</FormLabel>
+                  {isEdit && (
+                    <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded">
+                      Locked after creation
+                    </span>
+                  )}
+                </div>
                 <FormControl>
                   <select
+                    disabled={isEdit}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     {...field}
                     onChange={(e) => {
-                      const val = e.target.value as "normal" | "wanda" | "mobile";
+                      const val = e.target.value as "general" | "wanda" | "mobile";
                       field.onChange(val);
+                      form.setValue("shopType", val === "wanda" ? "wanda" : val === "mobile" ? "mobile" : "normal");
                       form.setValue("hasVariablePackFeature", val === "wanda");
                       form.setValue("hasMobileShopFeature", val === "mobile");
                     }}
                   >
-                    <option value="normal">Normal (General Retail)</option>
-                    <option value="wanda">Wanda (Grain / Feed & Variable Pack)</option>
-                    <option value="mobile">Devices & Repairs (Smartphones, Electronics, IMEI & Repairs)</option>
+                    <option value="general">General Retail</option>
+                    <option value="wanda">Wanda (Grain / Feed Merchant & Feed Milling)</option>
+                    <option value="mobile">Mobile & Electronics (Smartphones, IMEI & Repair Jobs)</option>
                   </select>
                 </FormControl>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {field.value === "normal" && "Standard retail business workflow with general inventory, sales, and accounts."}
-                  {field.value === "wanda" && "Grain & feed merchant workflow with rate per Kg, auto bag-rate synchronization, and variable weight packs."}
-                  {field.value === "mobile" && "Electronics & mobile device workflow with IMEI/Serial tracking, PTA status, brands catalog, warranty lookup, and repair job cards."}
+                  {isEdit ? "Industry type cannot be changed for an existing tenant to maintain catalog and ledger integrity." : (
+                    <>
+                      {(field.value === "general" || field.value === "normal") && "Standard retail business workflow with dynamic catalog seeding for brands, categories, and products."}
+                      {field.value === "wanda" && "Grain & feed merchant workflow with auto bag-rate synchronization, weight per Kg, and seeded cattle/poultry feed brands."}
+                      {field.value === "mobile" && "Electronics & mobile device workflow with IMEI tracking, seeded smartphone brands (Apple, Samsung, etc.), accessories, and repair services."}
+                    </>
+                  )}
                 </p>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {(selectedIndustry === "general" || selectedIndustry === "normal") && (
+            <FormField
+              control={form.control}
+              name="businessSubType"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2 border rounded-md p-4 bg-muted/20">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="font-semibold">General Industry Sub-Category</FormLabel>
+                    {isEdit && (
+                      <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded">
+                        Locked after creation
+                      </span>
+                    )}
+                  </div>
+                  <FormControl>
+                    <select
+                      disabled={isEdit}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      {...field}
+                    >
+                      <option value="general_store">General Store / Mart (FMCG, Groceries, Staples & Provisions)</option>
+                      <option value="bakery">Bakery (Breads, Cakes, Pastries, Sweets & Savouries)</option>
+                      <option value="milkshop">Milk Shop (Fresh Dairy, Milk, Yogurt, Ghee, Butter & Eggs)</option>
+                    </select>
+                  </FormControl>
+                  <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                    {isEdit ? (
+                      <p>Sub-category and seeded catalog profile cannot be changed after tenant creation.</p>
+                    ) : (
+                      <>
+                        <p className="font-medium text-foreground">
+                          Dynamic Seeding on Creation:
+                        </p>
+                        {field.value === "bakery" && (
+                          <p>✨ Seeds Brands (Dawn, Gourmet, In-House), Categories (Breads, Cakes, Pastries, Biscuits, Mithai), and ready-to-sell bakery products.</p>
+                        )}
+                        {field.value === "milkshop" && (
+                          <p>✨ Seeds Brands (Pure Dairy, Nestle, Olper's), Categories (Fresh Milk, Desi Ghee, Khoya, Eggs), and dairy products with Litre & Kg units.</p>
+                        )}
+                        {(!field.value || field.value === "general_store" || field.value === "mart") && (
+                          <p>✨ Seeds Brands (National, Shan, Unilever, Dalda, Tapal), Categories (Grocery, Spices, Oil, Beverages), and retail products with Barcodes.</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}

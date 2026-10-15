@@ -25,6 +25,8 @@ interface Tenant {
   licenseKey?: string | null
   hasVariablePackFeature?: boolean
   hasMobileShopFeature?: boolean
+  industryType?: string | null
+  businessSubType?: string | null
   validFrom: string
   validUntil: string | null
 }
@@ -76,19 +78,24 @@ export function TenantList() {
                 <TableCell className="font-medium">{tenant.identifier}</TableCell>
                 <TableCell>{tenant.name}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    tenant.hasMobileShopFeature
-                      ? 'bg-purple-100 text-purple-700'
-                      : tenant.hasVariablePackFeature
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-slate-100 text-slate-700'
-                  }`}>
-                    {tenant.hasMobileShopFeature
-                      ? 'Devices & Repairs'
-                      : tenant.hasVariablePackFeature
-                      ? 'Wanda'
-                      : 'Normal'}
-                  </span>
+                  {(() => {
+                    const industry = tenant.industryType || (tenant.hasMobileShopFeature ? 'mobile' : tenant.hasVariablePackFeature ? 'wanda' : 'general');
+                    const sub = tenant.businessSubType;
+
+                    if (industry === 'mobile' || tenant.hasMobileShopFeature) {
+                      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Mobile & Repairs</span>;
+                    }
+                    if (industry === 'wanda' || tenant.hasVariablePackFeature) {
+                      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Wanda (Feed/Grain)</span>;
+                    }
+                    if (sub === 'bakery') {
+                      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Bakery</span>;
+                    }
+                    if (sub === 'milkshop') {
+                      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Milk Shop</span>;
+                    }
+                    return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">General Mart</span>;
+                  })()}
                 </TableCell>
                 <TableCell>
                   {tenant.licenseKey ? (

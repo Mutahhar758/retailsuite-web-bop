@@ -16,11 +16,12 @@ export function TenantCreate() {
       const payload = {
         ...values,
         adminEmail: values.adminEmail || undefined,
-        dbProvider: values.dbProvider,
+        industryType: values.industryType,
+        businessSubType: values.businessSubType,
         validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
         validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
-        hasVariablePackFeature: values.shopType === "wanda",
-        hasMobileShopFeature: values.shopType === "mobile",
+        hasVariablePackFeature: values.industryType === "wanda",
+        hasMobileShopFeature: values.industryType === "mobile",
       }
       const response = await api.post('/tenants', payload)
       return response.data

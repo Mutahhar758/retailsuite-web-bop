@@ -28,10 +28,12 @@ export function TenantEdit() {
         name: values.name,
         adminEmail: values.adminEmail || undefined,
         dbProvider: tenant?.dbProvider || values.dbProvider,
+        industryType: tenant?.industryType ?? values.industryType,
+        businessSubType: tenant?.businessSubType ?? values.businessSubType,
         validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
         validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
-        hasVariablePackFeature: values.shopType === "wanda",
-        hasMobileShopFeature: values.shopType === "mobile",
+        hasVariablePackFeature: (tenant?.industryType ?? values.industryType) === "wanda",
+        hasMobileShopFeature: (tenant?.industryType ?? values.industryType) === "mobile",
       }
       const response = await api.put(`/tenants/${id}`, payload)
       return response.data
