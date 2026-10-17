@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
-import { Plus, Pencil, Copy, Check } from "lucide-react"
+import { Plus, Pencil, Copy, Check, Share2 } from "lucide-react"
 import { format } from "date-fns"
 
 import api from "@/lib/axios"
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { TenantInviteModal } from "@/components/TenantInviteModal"
 
 interface Tenant {
   id: string
@@ -34,6 +35,7 @@ interface Tenant {
 export function TenantList() {
   const navigate = useNavigate()
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [invitingTenant, setInvitingTenant] = useState<Tenant | null>(null)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["tenants"],
@@ -138,13 +140,27 @@ export function TenantList() {
                   {tenant.validUntil ? format(new Date(tenant.validUntil), 'MMM dd, yyyy') : 'Indefinite'}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(`/tenants/${tenant.id}/edit`)}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1 text-xs font-medium border-primary/30 text-primary hover:bg-primary/10"
+                      title="Send Invite & Setup Links"
+                      onClick={() => setInvitingTenant(tenant)}
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>Invite</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Edit Tenant"
+                      onClick={() => navigate(`/tenants/${tenant.id}/edit`)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -158,6 +174,14 @@ export function TenantList() {
           </TableBody>
         </Table>
       </CardContent>
+
+      <TenantInviteModal
+        tenant={invitingTenant}
+        open={!!invitingTenant}
+        onOpenChange={(open) => {
+          if (!open) setInvitingTenant(null)
+        }}
+      />
     </Card>
   )
 }
