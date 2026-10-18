@@ -42,7 +42,7 @@ interface TenantInviteModalProps {
 
 const DEFAULT_DESKTOP_SETUP_URL = "http://retailsuite-desktop.bizgripsolutions.com/setup.exe"
 const DEFAULT_ANDROID_APP_URL = "https://drive.google.com/file/d/1R9YrB8ijLX3Cz_aOuQS7XDTDOK-7kW5-/view?usp=sharing"
-const DEFAULT_WEB_URL = "https://retail.bizgripsolutions.com/"
+const DEFAULT_WEB_URL = "https://retailsuite.bizgripsolutions.com/"
 const DEFAULT_PASSWORD = "Hallo123$"
 
 export const TenantInviteModal: React.FC<TenantInviteModalProps> = ({
