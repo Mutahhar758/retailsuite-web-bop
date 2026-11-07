@@ -18,8 +18,8 @@ export function TenantCreate() {
         adminEmail: values.adminEmail || undefined,
         industryType: values.industryType,
         businessSubType: values.businessSubType,
-        validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
-        validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
+        validFrom: values.validFrom || undefined,
+        validUntil: values.validUntil || undefined,
         hasVariablePackFeature: values.industryType === "wanda",
         hasMobileShopFeature: values.industryType === "mobile",
       }

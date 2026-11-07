@@ -30,8 +30,8 @@ export function TenantEdit() {
         dbProvider: tenant?.dbProvider || values.dbProvider,
         industryType: tenant?.industryType ?? values.industryType,
         businessSubType: tenant?.businessSubType ?? values.businessSubType,
-        validFrom: values.validFrom ? new Date(values.validFrom).toISOString() : undefined,
-        validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : undefined,
+        validFrom: values.validFrom || undefined,
+        validUntil: values.validUntil || undefined,
         hasVariablePackFeature: (tenant?.industryType ?? values.industryType) === "wanda",
         hasMobileShopFeature: (tenant?.industryType ?? values.industryType) === "mobile",
       }
