@@ -22,6 +22,7 @@ export function TenantCreate() {
         validUntil: values.validUntil || undefined,
         hasVariablePackFeature: values.industryType === "wanda",
         hasMobileShopFeature: values.industryType === "mobile",
+        isOnPremises: Boolean(values.isOnPremises),
       }
       const response = await api.post('/tenants', payload)
       return response.data

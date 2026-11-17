@@ -29,6 +29,7 @@ const tenantFormSchema = z.object({
   validUntil: z.string().optional(),
   hasVariablePackFeature: z.boolean().optional(),
   hasMobileShopFeature: z.boolean().optional(),
+  isOnPremises: z.boolean().optional(),
 }).refine((data) => {
   if (data.validFrom && data.validUntil) {
     return new Date(data.validUntil) > new Date(data.validFrom);
@@ -85,10 +86,12 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
       validUntil: initialValues?.validUntil ? initialValues.validUntil.split('T')[0] : "",
       hasVariablePackFeature: initialValues?.hasVariablePackFeature ?? (defaultIndustry === "wanda"),
       hasMobileShopFeature: initialValues?.hasMobileShopFeature ?? (defaultIndustry === "mobile"),
+      isOnPremises: initialValues?.isOnPremises ?? false,
     },
   })
 
   const selectedIndustry = form.watch("industryType")
+  const isOnPremises = form.watch("isOnPremises")
 
   const handleFormSubmit = (data: TenantFormValues) => {
     const isWanda = data.industryType === "wanda";
@@ -338,6 +341,39 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
 
           <FormField
             control={form.control}
+            name="isOnPremises"
+            render={({ field }) => (
+              <FormItem className="md:col-span-2">
+                <FormLabel>Deployment Mode</FormLabel>
+                <FormControl>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isEdit}
+                    value={field.value ? "onpremises" : "cloud"}
+                    onChange={(e) => {
+                      const onPrem = e.target.value === "onpremises";
+                      field.onChange(onPrem);
+                      if (onPrem) {
+                        form.setValue("dbProvider", "postgresql");
+                      }
+                    }}
+                  >
+                    <option value="cloud">Cloud (Hosted SaaS)</option>
+                    <option value="onpremises">On-Premises (Local Store Server)</option>
+                  </select>
+                </FormControl>
+                {isOnPremises && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    No cloud database or migrations will be created. A License Key will be generated for the On-Premises installer.
+                  </p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="dbProvider"
             render={({ field }) => (
               <FormItem className="md:col-span-2">
@@ -345,7 +381,7 @@ export function TenantForm({ initialValues, onSubmit, isSubmitting, isEdit = fal
                 <FormControl>
                   <select
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isEdit}
+                    disabled={isEdit || Boolean(isOnPremises)}
                     {...field}
                   >
                     <option value="postgresql">PostgreSQL</option>
